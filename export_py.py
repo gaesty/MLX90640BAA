@@ -1,3 +1,4 @@
+import argparse
 import websocket
 import struct
 import numpy as np
@@ -5,8 +6,23 @@ import time
 import os
 from scipy.ndimage import label, generate_binary_structure
 
-# Chemin pour sauvegarder les matrices
-SAVE_DIR = r"C:\Users\dell\Desktop\ESP8266\export_data\dataset_thermique"
+# --- Command-line arguments ---
+parser = argparse.ArgumentParser(
+    description="Record GY-MLX90640BAA thermal frames from an ESP8266 WebSocket server."
+)
+parser.add_argument(
+    "--ip",
+    default="10.28.26.7",
+    help="IP address of the ESP8266 (default: 10.28.26.7)",
+)
+parser.add_argument(
+    "--output",
+    default="./dataset_thermique",
+    help="Directory to save .npy frame files (default: ./dataset_thermique)",
+)
+args = parser.parse_args()
+
+SAVE_DIR = args.output
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # Compteur pour la séquence des fichiers
@@ -64,7 +80,7 @@ def on_close(ws, close_status_code, close_msg):
     start_capture()
 
 def start_capture():
-    ws_url = "ws://10.28.26.7:81/"
+    ws_url = f"ws://{args.ip}:81/"
     print(f"Connexion à {ws_url}...")
 
     ws = websocket.WebSocketApp(ws_url,
