@@ -38,20 +38,12 @@ Uses the hardware **Serial2** peripheral.
 *   **DHT11 Data:** GPIO 5
 *   **PIR Output:** GPIO 22
 
-### UART Bridge to ROCK 5B (`sketch_apr14a.ino`)
-
-**ESP32 (NodeMCU-32S)**
-*   **RXD2:** GPIO 16 (Connect to Pin 8 of ROCK 5B)
-*   **TXD2:** GPIO 17 (Connect to Pin 10 of ROCK 5B)
-
 ---
 
 ## Repository Files
 
 ### Thermal Camera Sketches
 *   **`sketch_apr15a.ino` / `sketch_feb27a.ino`** — ESP32 Wi-Fi WebSocket Heatmap. Uses `WiFiManager` to dynamically configure Wi-Fi. Serves an HTML page on port 80 and streams thermal frames via WebSockets on port 81.
-*   **`sketch_feb25a.ino`** — ESP8266 Wi-Fi WebSocket Heatmap. (Hardcoded Wi-Fi credentials).
-*   **`sketch_feb23a.ino`** — ESP8266 Standalone Serial Debug. Prints ASCII heatmaps to the Serial Monitor.
 
 ### Video Streaming Sketches
 *   **`sketch_apr15c.ino`** — ESP32-CAM (AI-Thinker). Uses `WiFiManager` to connect to Wi-Fi. Streams real-time JPEG frames to an embedded web dashboard via WebSockets.
@@ -61,7 +53,6 @@ Uses the hardware **Serial2** peripheral.
 *   **`sketch_apr15b.ino`** — ESP32 Dashboard for DHT11 & PIR. Uses `WiFiManager` for easy setup. Sends JSON data (`{t, h, p}`) over WebSockets to a sleek web interface displaying temperature, humidity, and motion status.
 
 ### Utilities
-*   **`sketch_apr14a.ino`** — Simple USB-to-UART bridge using an ESP32 to communicate with a ROCK 5B SBC.
 *   **`export_py.py`** — Python script to connect to the Thermal Camera WebSockets and save raw frames as NumPy `.npy` files for offline analysis.
 
 ---
@@ -116,7 +107,7 @@ python export_py.py --ip <BOARD_IP> --output <save_directory>
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `--ip` | `10.28.26.7` | IP address of the ESP8266 or ESP32 (shown in Serial Monitor after boot) |
+| `--ip` | `10.28.26.7` | IP address of the ESP32 (shown in Serial Monitor after boot) |
 | `--output` | `./dataset_thermique` | Directory where `.npy` frame files are saved |
 
 #### Example
