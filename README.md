@@ -1,6 +1,6 @@
-# MLX90640BAA — ESP8266 / ESP32 Thermal Camera
+# ESP8266 / ESP32 Sensor & Camera Projects
 
-A project to read, display and record thermal data from a **GY-MLX90640BAA** (32×24 infrared sensor) using an **ESP8266** or **ESP32** microcontroller, with a companion Python script to save frames for further analysis.
+A collection of projects to read, display, and stream data from various sensors (Thermal, Video, Temperature, Humidity, Motion) using **ESP8266**, **ESP32**, **ESP32-CAM**, and **ESP32-S3** microcontrollers. Includes WebSockets for real-time browser dashboards and a companion Python script for thermal data recording.
 
 ---
 
@@ -9,78 +9,68 @@ A project to read, display and record thermal data from a **GY-MLX90640BAA** (32
 | Component | Details |
 |-----------|---------|
 | ESP8266 board | NodeMCU, Wemos D1 Mini, or equivalent |
-| ESP32 board | ESP32S (DevKit or equivalent) |
+| ESP32 board | NodeMCU-32S, ESP32 DevKit, or equivalent |
+| ESP32-CAM | AI-Thinker ESP32-CAM module |
+| ESP32-S3 CAM | Freenove/Elegoo ESP32-S3 WROOM CAM module |
 | GY-MLX90640BAA | 32×24 IR thermal camera module (UART version) |
+| DHT11 | Temperature and Humidity sensor |
+| HC-SR501 (PIR) | Passive Infrared Motion sensor |
 | USB cable | For programming and power |
-| Wi-Fi network | Required for the WebSocket sketches |
+| Wi-Fi network | Required for the WebSocket and Streaming sketches |
 
 ---
 
 ## Wiring
 
+### GY-MLX90640BAA (Thermal Camera)
+
 The GY-MLX90640BAA communicates over **UART at 115200 baud**.
 
-### ESP32S
+**ESP32 (`sketch_feb27a.ino`, `sketch_apr15a.ino`)**
+Uses the hardware **Serial2** peripheral.
+*   **VCC:** 3.3 V
+*   **GND:** GND
+*   **TX:** GPIO 16 (Serial2 RX)
+*   **RX:** GPIO 17 (Serial2 TX)
 
-Uses the hardware **Serial2** peripheral (`SENSOR_RX = GPIO 16`, `SENSOR_TX = GPIO 17`).
-
-| GY-MLX90640BAA pin | ESP32S pin |
-|--------------------|------------|
-| VCC | 3.3 V |
-| GND | GND |
-| TX | P16 (GPIO 16 — Serial2 RX) |
-| RX | P17 (GPIO 17 — Serial2 TX) |
-
-> **Note:** `Serial` (USB) is kept free for debug messages printed to the Arduino Serial Monitor.
-
-### ESP8266
-
+**ESP8266 (`sketch_feb23a.ino`, `sketch_feb25a.ino`)**
 `Serial.swap()` is called to move the hardware UART to pins **D7 (RX)** and **D8 (TX)**.
+*   **VCC:** 3.3 V
+*   **GND:** GND
+*   **TX:** D7 (GPIO 13)
+*   **RX:** D8 (GPIO 15)
 
-| GY-MLX90640BAA pin | ESP8266 pin |
-|--------------------|-------------|
-| VCC | 3.3 V |
-| GND | GND |
-| TX | D7 (GPIO 13 — UART RX after swap) |
-| RX | D8 (GPIO 15 — UART TX after swap) |
+### DHT11 & PIR Motion Sensor (`sketch_apr15b.ino`)
 
-> **Note:** The original hardware UART (GPIO 1 / GPIO 3) is re-used as a software debug serial port (`debugPC`) so you can still read log messages in the Arduino Serial Monitor.
+**ESP32 (NodeMCU-32S)**
+*   **DHT11 Data:** GPIO 5
+*   **PIR Output:** GPIO 22
+
+### UART Bridge to ROCK 5B (`sketch_apr14a.ino`)
+
+**ESP32 (NodeMCU-32S)**
+*   **RXD2:** GPIO 16 (Connect to Pin 8 of ROCK 5B)
+*   **TXD2:** GPIO 17 (Connect to Pin 10 of ROCK 5B)
 
 ---
 
 ## Repository Files
 
-### `sketch_feb27a.ino` — ESP32S Wi-Fi WebSocket Heatmap Sketch *(ESP32S main sketch)*
+### Thermal Camera Sketches
+*   **`sketch_apr15a.ino` / `sketch_feb27a.ino`** — ESP32 Wi-Fi WebSocket Heatmap. Uses `WiFiManager` to dynamically configure Wi-Fi. Serves an HTML page on port 80 and streams thermal frames via WebSockets on port 81.
+*   **`sketch_feb25a.ino`** — ESP8266 Wi-Fi WebSocket Heatmap. (Hardcoded Wi-Fi credentials).
+*   **`sketch_feb23a.ino`** — ESP8266 Standalone Serial Debug. Prints ASCII heatmaps to the Serial Monitor.
 
-Targets the **ESP32** and uses the native `Serial2` hardware port (pins P16/P17).  
-Connects to your Wi-Fi network and:
-1. Serves an embedded HTML/JavaScript page on **port 80**.
-2. Pushes raw 32×24 float frames over a **WebSocket on port 81** at ~1 Hz.
-3. The browser page renders a live colour heatmap (blue → red).
+### Video Streaming Sketches
+*   **`sketch_apr15c.ino`** — ESP32-CAM (AI-Thinker). Uses `WiFiManager` to connect to Wi-Fi. Streams real-time JPEG frames to an embedded web dashboard via WebSockets.
+*   **`sketch_apr15d.ino`** — ESP32-S3 WROOM CAM. Similar to the above but configured for the ESP32-S3 camera pinout.
 
-**Use case:** Real-time visualisation from any browser on the same network, and data acquisition with `export_py.py`, using an ESP32S board.
+### Environmental Dashboard
+*   **`sketch_apr15b.ino`** — ESP32 Dashboard for DHT11 & PIR. Uses `WiFiManager` for easy setup. Sends JSON data (`{t, h, p}`) over WebSockets to a sleek web interface displaying temperature, humidity, and motion status.
 
-### `sketch_feb23a.ino` — ESP8266 Standalone Serial Debug Sketch
-
-Reads one thermal frame every 5 seconds and prints:
-- Ambient temperature, minimum and maximum pixel temperatures.
-- A 32×12 ASCII art heatmap to the debug serial port (visible in the Arduino Serial Monitor).
-
-**Use case:** Quick hardware verification on an **ESP8266** without needing Wi-Fi or a PC client.
-
-### `sketch_feb25a.ino` — ESP8266 Wi-Fi WebSocket Heatmap Sketch *(ESP8266 main sketch)*
-
-Targets the **ESP8266** and connects to your Wi-Fi network to:
-1. Serve an embedded HTML/JavaScript page on **port 80**.
-2. Push raw 32×24 float frames over a **WebSocket on port 81** at ~1 Hz.
-3. Render a live colour heatmap (blue → red) in the browser.
-
-**Use case:** Real-time visualisation from any browser on the same network, and data acquisition with `export_py.py`, using an ESP8266 board.
-
-### `export_py.py` — Python Data Recording Script
-
-Connects to the ESP8266 **or** ESP32 WebSocket server, receives binary float frames and saves each one as a NumPy `.npy` file.  
-File names encode the frame index, temperature range, estimated person count (25–33 °C blobs) and hot-spot count (>33 °C blobs).
+### Utilities
+*   **`sketch_apr14a.ino`** — Simple USB-to-UART bridge using an ESP32 to communicate with a ROCK 5B SBC.
+*   **`export_py.py`** — Python script to connect to the Thermal Camera WebSockets and save raw frames as NumPy `.npy` files for offline analysis.
 
 ---
 
@@ -88,41 +78,26 @@ File names encode the frame index, temperature range, estimated person count (25
 
 ### Required Libraries
 
-Install the following libraries through the **Arduino Library Manager** (`Sketch → Include Library → Manage Libraries…`) or via the provided links:
+Install the following libraries through the **Arduino Library Manager** (`Sketch → Include Library → Manage Libraries…`):
 
-| Library | Purpose |
-|---------|---------|
-| [ESP8266 Arduino Core](https://github.com/esp8266/Arduino) | Board support for ESP8266 |
-| [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32) | Board support for ESP32 (ESP32S) |
-| [WebSockets by Markus Sattler](https://github.com/Links2004/arduinoWebSockets) | WebSocket server (all WebSocket sketches) |
+*   **WiFiManager** by tzapu (Required for newer sketches to avoid hardcoding credentials)
+*   **WebSockets** by Markus Sattler (WebSocket server)
+*   **DHT sensor library** by Adafruit (For `sketch_apr15b.ino`)
+*   ESP32/ESP8266 core libraries and `esp_camera` (Built into the ESP32 board package)
 
-### Steps — ESP32S (`sketch_feb27a.ino`)
+### Connecting to Wi-Fi (WiFiManager)
 
-1. Open the Arduino IDE and install the **ESP32 board package** (add `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json` in *Preferences → Additional boards manager URLs*).
-2. Select your board under **Tools → Board → ESP32 Arduino → ESP32 Dev Module** (or your specific ESP32S variant).
-3. Open **`sketch_feb27a.ino`**.
-4. Edit the Wi-Fi credentials at the top of the file:
-   ```cpp
-   const char* ssid     = "YOUR_WIFI_SSID";
-   const char* password = "YOUR_WIFI_PASSWORD";
-   ```
-5. Upload the sketch. Open the Serial Monitor at **115200 baud** to see the assigned IP address.
-
-### Steps — ESP8266 (`sketch_feb25a.ino`)
-
-1. Open the Arduino IDE and install the **ESP8266 board package** (add `https://arduino.esp8266.com/stable/package_esp8266com_index.json` in *Preferences → Additional boards manager URLs*).
-2. Select your board under **Tools → Board → ESP8266 Boards**.
-3. Open **`sketch_feb25a.ino`** (or `sketch_feb23a.ino` for a standalone test).
-4. Edit the Wi-Fi credentials at the top of `sketch_feb25a.ino`:
-   ```cpp
-   const char* ssid     = "YOUR_WIFI_SSID";
-   const char* password = "YOUR_WIFI_PASSWORD";
-   ```
-5. Upload the sketch. Open the Serial Monitor at **115200 baud** to see the assigned IP address.
+Most sketches now use **WiFiManager**. Instead of hardcoding your SSID and Password:
+1.  Upload the sketch to your board.
+2.  The board will host an Access Point (e.g., `ESP32-CAM-Config`, `ESP32-Thermal-Config`, etc.).
+3.  Connect to this network using your phone or PC.
+4.  A captive portal will appear (or navigate to `192.168.4.1`).
+5.  Select your home Wi-Fi network and enter the password.
+6.  The board will reboot and connect to your network. Check the Serial Monitor (115200 baud) for the assigned IP address.
 
 ---
 
-## Python Script Setup
+## Python Script Setup (Thermal Recording)
 
 ### Requirements
 
