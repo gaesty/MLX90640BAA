@@ -1,6 +1,6 @@
-# ESP8266 / ESP32 Sensor & Camera Projects
+# ESP32 Sensor & Camera Projects
 
-A collection of projects to read, display, and stream data from various sensors (Thermal, Video, Temperature, Humidity, Motion) using **ESP8266**, **ESP32**, **ESP32-CAM**, and **ESP32-S3** microcontrollers. Includes WebSockets for real-time browser dashboards and a companion Python script for thermal data recording.
+A collection of projects to read, display, and stream data from various sensors (Thermal, Video, Temperature, Humidity, Motion) using **ESP32**, **ESP32-CAM**, and **ESP32-S3** microcontrollers. Includes WebSockets for real-time browser dashboards and a companion Python script for thermal data recording.
 
 ---
 
@@ -8,7 +8,6 @@ A collection of projects to read, display, and stream data from various sensors 
 
 | Component | Details |
 |-----------|---------|
-| ESP8266 board | NodeMCU, Wemos D1 Mini, or equivalent |
 | ESP32 board | NodeMCU-32S, ESP32 DevKit, or equivalent |
 | ESP32-CAM | AI-Thinker ESP32-CAM module |
 | ESP32-S3 CAM | Freenove/Elegoo ESP32-S3 WROOM CAM module |
@@ -32,13 +31,6 @@ Uses the hardware **Serial2** peripheral.
 *   **GND:** GND
 *   **TX:** GPIO 16 (Serial2 RX)
 *   **RX:** GPIO 17 (Serial2 TX)
-
-**ESP8266 (`sketch_feb23a.ino`, `sketch_feb25a.ino`)**
-`Serial.swap()` is called to move the hardware UART to pins **D7 (RX)** and **D8 (TX)**.
-*   **VCC:** 3.3 V
-*   **GND:** GND
-*   **TX:** D7 (GPIO 13)
-*   **RX:** D8 (GPIO 15)
 
 ### DHT11 & PIR Motion Sensor (`sketch_apr15b.ino`)
 
