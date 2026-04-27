@@ -154,7 +154,3 @@ Query command (request one frame):
 ```
 
 ---
-
-## License
-
-This project is released under the MIT License. See [LICENSE](LICENSE) for details.
