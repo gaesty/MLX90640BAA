@@ -4,6 +4,15 @@ A collection of projects to read, display, and stream data from various sensors 
 
 ---
 
+## 🌐 Project Ecosystem
+
+This repository acts as the **Data Acquisition (Edge) Layer** within a larger, distributed architecture. It is designed to work seamlessly with the following interconnected projects:
+
+* **[superviseur_app](https://github.com/JasonGagnard/superviseur_app)**: The **Supervision & Dashboard Layer**. This centralized application aggregates and visualizes the WebSocket streams (temperature, humidity, motion, and video) provided by the ESP32 microcontrollers in real-time.
+* **[Human_detection_rock5b](https://github.com/youcef-2001/Human_detection_rock5b)**: The **AI & Processing Layer**. Deployed on a Rock 5B board, this project consumes the raw thermal and video streams from the ESP32 devices to perform real-time human detection (utilizing models like YOLOv8) and advanced analytics.
+
+---
+
 ## Hardware Requirements
 
 | Component | Details |
@@ -27,33 +36,33 @@ The GY-MLX90640BAA communicates over **UART at 115200 baud**.
 
 **ESP32 (`sketch_feb27a.ino`, `sketch_apr15a.ino`)**
 Uses the hardware **Serial2** peripheral.
-*   **VCC:** 3.3 V
-*   **GND:** GND
-*   **TX:** GPIO 16 (Serial2 RX)
-*   **RX:** GPIO 17 (Serial2 TX)
+* **VCC:** 3.3 V
+* **GND:** GND
+* **TX:** GPIO 16 (Serial2 RX)
+* **RX:** GPIO 17 (Serial2 TX)
 
 ### DHT11 & PIR Motion Sensor (`sketch_apr15b.ino`)
 
 **ESP32 (NodeMCU-32S)**
-*   **DHT11 Data:** GPIO 5
-*   **PIR Output:** GPIO 22
+* **DHT11 Data:** GPIO 5
+* **PIR Output:** GPIO 22
 
 ---
 
 ## Repository Files
 
 ### Thermal Camera Sketches
-*   **`sketch_apr15a.ino` / `sketch_feb27a.ino`** — ESP32 Wi-Fi WebSocket Heatmap. Uses `WiFiManager` to dynamically configure Wi-Fi. Serves an HTML page on port 80 and streams thermal frames via WebSockets on port 81.
+* **`sketch_apr15a.ino` / `sketch_feb27a.ino`** — ESP32 Wi-Fi WebSocket Heatmap. Uses `WiFiManager` to dynamically configure Wi-Fi. Serves an HTML page on port 80 and streams thermal frames via WebSockets on port 81. These streams are optimized for ingestion by the [Human_detection_rock5b](https://github.com/youcef-2001/Human_detection_rock5b) pipeline.
 
 ### Video Streaming Sketches
-*   **`sketch_apr15c.ino`** — ESP32-CAM (AI-Thinker). Uses `WiFiManager` to connect to Wi-Fi. Streams real-time JPEG frames to an embedded web dashboard via WebSockets.
-*   **`sketch_apr15d.ino`** — ESP32-S3 WROOM CAM. Similar to the above but configured for the ESP32-S3 camera pinout.
+* **`sketch_apr15c.ino`** — ESP32-CAM (AI-Thinker). Uses `WiFiManager` to connect to Wi-Fi. Streams real-time JPEG frames via WebSockets, ready to be displayed in the [superviseur_app](https://github.com/JasonGagnard/superviseur_app).
+* **`sketch_apr15d.ino`** — ESP32-S3 WROOM CAM. Similar to the above but configured for the ESP32-S3 camera pinout.
 
 ### Environmental Dashboard
-*   **`sketch_apr15b.ino`** — ESP32 Dashboard for DHT11 & PIR. Uses `WiFiManager` for easy setup. Sends JSON data (`{t, h, p}`) over WebSockets to a sleek web interface displaying temperature, humidity, and motion status.
+* **`sketch_apr15b.ino`** — ESP32 Dashboard for DHT11 & PIR. Uses `WiFiManager` for easy setup. Sends JSON data (`{t, h, p}`) over WebSockets to a web interface, acting as a standalone view or a data source for the central [superviseur_app](https://github.com/JasonGagnard/superviseur_app).
 
 ### Utilities
-*   **`export_py.py`** — Python script to connect to the Thermal Camera WebSockets and save raw frames as NumPy `.npy` files for offline analysis.
+* **`export_py.py`** — Python script to connect to the Thermal Camera WebSockets and save raw frames as NumPy `.npy` files. Crucial for building datasets used to train models in the [Human_detection_rock5b](https://github.com/youcef-2001/Human_detection_rock5b) project.
 
 ---
 
@@ -63,10 +72,10 @@ Uses the hardware **Serial2** peripheral.
 
 Install the following libraries through the **Arduino Library Manager** (`Sketch → Include Library → Manage Libraries…`):
 
-*   **WiFiManager** by tzapu (Required for newer sketches to avoid hardcoding credentials)
-*   **WebSockets** by Markus Sattler (WebSocket server)
-*   **DHT sensor library** by Adafruit (For `sketch_apr15b.ino`)
-*   ESP32/ESP8266 core libraries and `esp_camera` (Built into the ESP32 board package)
+* **WiFiManager** by tzapu (Required for newer sketches to avoid hardcoding credentials)
+* **WebSockets** by Markus Sattler (WebSocket server)
+* **DHT sensor library** by Adafruit (For `sketch_apr15b.ino`)
+* ESP32/ESP8266 core libraries and `esp_camera` (Built into the ESP32 board package)
 
 ### Connecting to Wi-Fi (WiFiManager)
 
@@ -83,74 +92,3 @@ Most sketches now use **WiFiManager**. Instead of hardcoding your SSID and Passw
 ## Python Script Setup (Thermal Recording)
 
 ### Requirements
-
-```
-python >= 3.8
-websocket-client
-numpy
-scipy
-```
-
-Install dependencies:
-
-```bash
-pip install websocket-client numpy scipy
-```
-
-### Usage
-
-```bash
-python export_py.py --ip <BOARD_IP> --output <save_directory>
-```
-
-#### Arguments
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `--ip` | `10.28.26.7` | IP address of the ESP32 (shown in Serial Monitor after boot) |
-| `--output` | `./dataset_thermique` | Directory where `.npy` frame files are saved |
-
-#### Example
-
-```bash
-python export_py.py --ip 192.168.1.42 --output ./my_thermal_dataset
-```
-
-### Saved File Format
-
-Each frame is saved as a **NumPy `.npy` file** containing a `float32` array of shape `(24, 32)` (24 rows × 32 columns, temperatures in °C).
-
-File naming convention:
-```
-frame_<min_temp>_<max_temp>_<num_persons>_<num_hotspots>_<frame_index>.npy
-```
-
-Example: `frame_22.3_36.8_1_0_42.npy`
-
-Load a saved frame in Python:
-```python
-import numpy as np
-matrix = np.load("frame_22.3_36.8_1_0_42.npy")
-print(matrix.shape)   # (24, 32)
-print(matrix.min(), matrix.max())
-```
-
----
-
-## GY-MLX90640BAA UART Protocol (Summary)
-
-| Byte | Value | Meaning |
-|------|-------|---------|
-| 0–1 | `0x5A 0x5A` | Frame header |
-| 2 | `0x02` | Frame type: pixel data |
-| 3 | `0x06` | Data length field |
-| 4–1539 | — | 768 × 2 bytes, Little-Endian int16, divide by 100 for °C |
-| 1540–1541 | — | Ambient temperature (TA), same encoding |
-| 1542–1543 | — | Checksum |
-
-Query command (request one frame):
-```
-0xA5  0x35  0x01  0xDB
-```
-
----
