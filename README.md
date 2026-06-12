@@ -58,21 +58,16 @@ Uses the hardware **Serial2** peripheral.
 ## Repository Files
 
 ### Thermal Camera Sketches
-*   **`sketch_apr15a.ino` / `sketch_feb27a.ino`** — ESP32 Wi-Fi WebSocket Heatmap. Uses `WiFiManager` to dynamically configure Wi-Fi. Serves an HTML page on port 80 and streams thermal frames via WebSockets on port 81.
 * **`sketch_apr15a.ino` / `sketch_feb27a.ino`** — ESP32 Wi-Fi WebSocket Heatmap. Uses `WiFiManager` to dynamically configure Wi-Fi. Serves an HTML page on port 80 and streams thermal frames via WebSockets on port 81. These streams are optimized for ingestion by the [Human_detection_rock5b](https://github.com/youcef-2001/Human_detection_rock5b) pipeline.
 
 ### Video Streaming Sketches
-*   **`sketch_apr15c.ino`** — ESP32-CAM (AI-Thinker). Uses `WiFiManager` to connect to Wi-Fi. Streams real-time JPEG frames to an embedded web dashboard via WebSockets.
-*   **`sketch_apr15d.ino`** — ESP32-S3 WROOM CAM. Similar to the above but configured for the ESP32-S3 camera pinout.
 * **`sketch_apr15c.ino`** — ESP32-CAM (AI-Thinker). Uses `WiFiManager` to connect to Wi-Fi. Streams real-time JPEG frames via WebSockets, ready to be displayed in the [superviseur_app](https://github.com/JasonGagnard/superviseur_app).
 * **`sketch_apr15d.ino`** — ESP32-S3 WROOM CAM. Similar to the above but configured for the ESP32-S3 camera pinout.
 
 ### Environmental Dashboard
-*   **`sketch_apr15b.ino`** — ESP32 Dashboard for DHT11 & PIR. Uses `WiFiManager` for easy setup. Sends JSON data (`{t, h, p}`) over WebSockets to a sleek web interface displaying temperature, humidity, and motion status.
 * **`sketch_apr15b.ino`** — ESP32 Dashboard for DHT11 & PIR. Uses `WiFiManager` for easy setup. Sends JSON data (`{t, h, p}`) over WebSockets to a web interface, acting as a standalone view or a data source for the central [superviseur_app](https://github.com/JasonGagnard/superviseur_app).
 
 ### Utilities
-*   **`export_py.py`** — Python script to connect to the Thermal Camera WebSockets and save raw frames as NumPy `.npy` files for offline analysis.
 * **`export_py.py`** — Python script to connect to the Thermal Camera WebSockets and save raw frames as NumPy `.npy` files. Crucial for building datasets used to train models in the [Human_detection_rock5b](https://github.com/youcef-2001/Human_detection_rock5b) project.
 
 ---
